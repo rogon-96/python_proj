@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{%block title%}
+    Marks Generator App
+{%endblock%}
+
+{%block body%}
+    <h1>Marks Generator</h1>
+   <form action="data" method="post" enctype="multipart/form-data">
+        <label for="master">Select RollNo file</label>
+        <input type="file" id="master" name = "master"><br><br>
+        <label for="response">Select Response file</label>
+        <input type="file" id="files" name = "response"><br><br>
+        <input type="text" placeholder = "Enter correct option marks" id="positive" name= "positive">
+        <input type="text" placeholder = "Enter wrong option marks"id="negative" name="negative"><br><br>
+        <button type="submit">Get MarkSheets</button>
+   </form>
+{%endblock%}
