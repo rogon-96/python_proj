@@ -1,17 +1,66 @@
+<!-- {{data}} -->
 {% extends "base.html" %}
 {%block title%}
     Marks Generator App
 {%endblock%}
 
 {%block body%}
-    <h1>Marks Generator</h1>
-   <form action="data" method="post" enctype="multipart/form-data">
-        <label for="master">Select RollNo file</label>
-        <input type="file" id="master" name = "master"><br><br>
-        <label for="response">Select Response file</label>
-        <input type="file" id="files" name = "response"><br><br>
-        <input type="text" placeholder = "Enter correct option marks" id="positive" name= "positive">
-        <input type="text" placeholder = "Enter wrong option marks"id="negative" name="negative"><br><br>
-        <button type="submit">Get MarkSheets</button>
-   </form>
+    <div class="App">
+        <h1 class="Heading">Marks Generator</h1>
+        <form action="master" method="post" enctype="multipart/form-data">
+            <label for="master">Select master file</label><br><br>
+            <input type="file" id="master" name = "master">
+            <button type="submit" class="Upload">Upload</button><br>
+            {%if data['master_response']=='Uploaded Successfully' %}
+                <p style="color:green;font-size: x-small;">{{data['master_response']}}</p>
+            {%else%}
+                <p style="color: red;font-size: x-small;">{{data['master_response']}}</p>
+            {%endif%}
+            <br>
+        </form>
+        <form action="response" method="post" enctype="multipart/form-data">          
+            <label for="response">Select response file</label><br><br>
+            <input type="file" id="response" name ="response">
+            <button type="submit" class="Upload">Upload</button><br>
+            {%if data['responses_response']=='Uploaded Successfully' %}
+                <p style="color:green;font-size: x-small;">{{data['responses_response']}}</p>
+            {%else %}
+                <p style="color: red;font-size: x-small;">{{data['responses_response']}}</p>
+            {%endif%}
+            <br>
+        </form>
+        <form action="RollNo" method="post">
+            {%if data['positive_response'] and data['positive_response']=="This field is required" %}
+                <input style="border-color:red;" type="text" placeholder = "Correct option marks" id="positive" name='positive' ><br>
+                <p style="color: red;font-size: x-small;">{{data['positive_response']}}</p><br>
+            {%else%}
+                <input type="text" placeholder = "Correct option marks" id="positive" name='positive'><br>
+            {%endif%}
+            {%if data['negative_response'] and data['negative_response']=="This field is required" %}
+                <input style="border-color:red;"type="text" placeholder = "Wrong option marks"id="negative" name="negative"><br>
+                <p style="color: red;font-size: x-small;">{{data['negative_response']}}</p><br>
+            {%else%}
+                <input type="text" placeholder = "Wrong option marks"id="negative" name="negative"><br>
+            {%endif%}<br>
+            <button type="submit" class="generate">Generate RollNo Wise Marksheet</button><br>
+            {%if data['rollno_response']=='Generated Successfully' %}
+                <p style="color:green;font-size: x-small;">{{data['rollno_response']}}</p><br>
+            {%else %}
+                <p style="color: red;font-size: x-small;">{{data['rollno_response']}}</p><br>
+            {%endif%}<br>
+        </form>
+        <form action="concise" method="post">
+            <button type="submit" class="generate">Generate Concise Marksheet</button><br>
+            {%if data['rollno_response']=='Generated Successfully' %}
+            <p style="color:green;font-size: x-small;">{{data['concise_response']}}</p>
+            {%else %}
+            <p style="color: red;font-size: x-small;">{{data['concise_response']}}</p>
+            {%endif%}<br>
+        </form>
+        <form action="sendemail" method="post">
+            <button type="submit" class="generate">Send Email</button><br>
+            {{data['email_response']}}<br><br> 
+        </form>
+    </div>
+   
 {%endblock%}
