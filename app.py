@@ -3,12 +3,11 @@ from flask_mail import Mail, Message
 import csv,os,pandas as pd
 from werkzeug.utils import secure_filename
 import proj1
-# from func import *
 app = Flask(__name__)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'YOUR_GMAIL_ID'
-app.config['MAIL_PASSWORD'] = 'YOUR_GMAIL_PASSWORD'
+app.config['MAIL_USERNAME'] = 'motukurumidhun@gmail.com'
+app.config['MAIL_PASSWORD'] = 'Midhunreddy134@'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
@@ -20,7 +19,7 @@ bool_dict = {
 }
 sample_input_path = "./sample_input"
 sample_output_path = "./sample_output"
-crt_marks,wrng_marks = 0,0
+crt_marks,wrg_marks = 0,0
 
 def handle_cases(request):
     if not os.path.exists(os.path.join(sample_input_path,"master_roll.csv")):
@@ -35,6 +34,7 @@ def handle_cases(request):
     if request.form.get('negative')=='':
         bool_dict["negative_response"] = "This field is required"
         return False
+
     return True
     
 def handle_file_save(FileObject,req_file_name,req_resp_name):
@@ -75,34 +75,40 @@ def response():
 
 @app.route('/RollNo',methods=['GET','POST'])
 def rollno():
-    input_data = request.form
-    # print(input_data)
     if not handle_cases(request):
-        return redirect(url_for('index'))   
-    proj1.generateMarksheet()
+        return redirect(url_for('index')) 
+    if request.form.get('positive')!='':
+        crt_marks = float(request.form.get('positive'))  
+    if request.form.get('negative')!='':
+        wrg_marks = float(request.form.get('negative'))
+    proj1.generateMarksheet(crt_marks,wrg_marks)
     bool_dict["rollno_response"] = "Generated Successfully"  
     return redirect(url_for('index'))
 
 
 @app.route('/concise',methods=['GET','POST'])
 def concise():
-    if not handle_cases():
+    if not handle_cases(request):
         return redirect(url_for('index'))
-    proj1.generate_concise()
+    proj1.generate_concise(crt_marks,wrg_marks)
     bool_dict["concise_response"] = "Generated Successfully"
     return redirect(url_for('index'))
+
 
 @app.route('/sendemail',methods=['GET','POST'])
 def send_email():
     files = os.listdir('sample_output\marksheet')
-    for file in files:
-        msg = Message('Hello',sender ='motukurumidhun@gmail.com',recipients = ['venkat.abhilashreddy@gmail.com'])
-        msg.body = 'Hello Flask message sent from Flask-Mail'
-        with app.open_resource(f"./sample_output/marksheet/{file}") as fp:  
-            msg.attach(f"{file}", "application/xlsx", fp.read()) 
+    roll_email_lst = proj1.get_roll_email()
+    for roll,email1,email2 in roll_email_lst:
+        msg = Message('Your marks',sender ='motukurumidhun@gmail.com',recipients = [email1,email2])
+        msg.body = 'Your Quiz Marks'
+        with app.open_resource("sample_output\marksheet\{}.xlsx".format(roll)) as fp:  
+            msg.attach(f"{roll}", "application/xlsx", fp.read()) 
             mail.send(msg)
-            print(f"Success mail sent{file}")
+            print(f"Success mail sent{roll}")
     bool_dict["email_response"] = "Email Sent Successfully"
     return redirect(url_for('index')) 
+
+
 if __name__ == "__main__":
     app.run(debug=True)

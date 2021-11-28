@@ -3,7 +3,11 @@ import os,math,csv,openpyxl,pandas as pd
 slist = pd.read_csv('./sample_input/master_roll.csv')
 response = pd.read_csv('./sample_input/responses.csv')
 sample_output_path = "./sample_output/marksheet"
-
+def get_roll_email():
+    lst = []
+    for index,row in response.iterrows():
+        lst.append([row["Roll Number"],row["Email address"],row["IITP webmail"]])
+    return lst
 def get_answer():
     for index,row in response.iterrows():
         if row['Roll Number'] == 'ANSWER':
@@ -102,4 +106,4 @@ def generateMarksheet(mrks,wmrks):
         wb.save("./sample_output/marksheet/"+sheet.title+'.xlsx')
     return
 # generateMarksheet(5,-1)
-generate_concise(5,-1)
+# generate_concise(5,-1)
