@@ -3,7 +3,7 @@ from flask_mail import Mail, Message
 import csv,os,pandas as pd
 from werkzeug.utils import secure_filename
 import proj1
-# from func import *
+from func import *
 app = Flask(__name__)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
