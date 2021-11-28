@@ -1,7 +1,8 @@
 from flask import Flask,render_template,url_for,request,redirect,flash
-import csv,os
 from flask_mail import Mail, Message
+import csv,os,pandas as pd
 from werkzeug.utils import secure_filename
+import proj1
 # from func import *
 app = Flask(__name__)
 app.config['MAIL_SERVER']='smtp.gmail.com'
@@ -13,12 +14,29 @@ app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 bool_dict = {
     'master_response': '',
-    'responses_response': ''
+    'responses_response': '',
+    'positive_response':'',
+    'negative_response': ''
 }
 sample_input_path = "./sample_input"
 sample_output_path = "./sample_output"
+crt_marks,wrng_marks = 0,0
 
-
+def handle_cases(request):
+    if not os.path.exists(os.path.join(sample_input_path,"master_roll.csv")):
+        bool_dict["rollno_response"] = "You have not Uploaded master_roll.csv"
+        return False
+    if not os.path.exists(os.path.join(sample_input_path,"responses.csv")):
+        bool_dict["rollno_response"] = "You have not Uploaded responses.csv"
+        return False
+    if request.form.get('positive')=='':
+        bool_dict["positive_response"] = "This field is required"
+        return False
+    if request.form.get('negative')=='':
+        bool_dict["negative_response"] = "This field is required"
+        return False
+    return True
+    
 def handle_file_save(FileObject,req_file_name,req_resp_name):
     if not FileObject.filename:
         bool_dict[f"{req_resp_name}"] = "Didn't upload any file."
@@ -28,15 +46,11 @@ def handle_file_save(FileObject,req_file_name,req_resp_name):
         bool_dict[f"{req_resp_name}"] = "Uploaded a wrong file..plz Upload {}".format(req_file_name)
         return 
     sample_input= os.path.join(os.getcwd(),"sample_input")
-
     os.makedirs(sample_input,exist_ok = True)
-
     if os.path.exists(f"./sample_input/{file_name}"):
         os.remove(f"./sample_input/{file_name}")
-
     filename = secure_filename(file_name)
-    FileObject.save(os.path.join(sample_input_path,filename))
-    
+    FileObject.save(os.path.join(sample_input_path,filename))  
     bool_dict[f"{req_resp_name}"] = "Uploaded Successfully"
     return 
 
@@ -54,7 +68,6 @@ def master():
 
 @app.route('/response',methods=['GET','POST'])
 def response():
-    print(os.getcwd())
     FileObject = request.files.get("response")
     handle_file_save(FileObject,"responses.csv","responses_response")
     return redirect(url_for('index')) 
@@ -62,28 +75,20 @@ def response():
 
 @app.route('/RollNo',methods=['GET','POST'])
 def rollno():
-    bool_dict['positive_response'] = bool_dict['negative_response']=''
-    if not os.path.exists(os.path.join(sample_input_path,"master_roll.csv")):
-        bool_dict["rollno_response"] = "You have not Uploaded master_roll.csv"
-        return redirect(url_for('index'))
-    if not os.path.exists(os.path.join(sample_input_path,"responses.csv")):
-        bool_dict["rollno_response"] = "You have not Uploaded responses.csv"
-        return redirect(url_for('index'))
-    if request.form.get('positive')=='':
-        bool_dict["positive_response"] = "This field is required"
-        return redirect(url_for('index'))
-    if request.form.get('negative')=='':
-        bool_dict["negative_response"] = "This field is required"
-        return redirect(url_for('index'))
-    #Python Code must be inserted here
-    bool_dict["rollno_response"] = "Generated Successfully"
+    input_data = request.form
+    # print(input_data)
+    if not handle_cases(request):
+        return redirect(url_for('index'))   
+    proj1.generateMarksheet()
+    bool_dict["rollno_response"] = "Generated Successfully"  
     return redirect(url_for('index'))
 
 
 @app.route('/concise',methods=['GET','POST'])
 def concise():
-    #check if the files are existed then
-    #Python Code must be inserted here
+    if not handle_cases():
+        return redirect(url_for('index'))
+    proj1.generate_concise()
     bool_dict["concise_response"] = "Generated Successfully"
     return redirect(url_for('index'))
 

@@ -1,10 +1,8 @@
-import pandas as pd
-import os 
-import openpyxl
+import os,math,csv,openpyxl,pandas as pd
 
 slist = pd.read_csv('./sample_input/master_roll.csv')
 response = pd.read_csv('./sample_input/responses.csv')
-sample_output_path = "./sample_output"
+sample_output_path = "./sample_output/marksheet"
 
 def get_answer():
     for index,row in response.iterrows():
@@ -12,18 +10,38 @@ def get_answer():
             return [key for key in row][7:]
     return []
 
-def generate_concise():
-    crt = get_answer()
-    if crt == []:
+def calculate(mrks,wmrks,crt_opts_list,curr_opts):
+    crt_opts,not_attempted,wrg_opts = 0,0,0
+    for j in range(len(crt_opts_list)):
+        if(curr_opts[j]=='nan'): not_attempted+=1
+        elif(curr_opts[j] == crt_opts_list[j]): crt_opts+=1
+        else : wrg_opts+=1
+    result = crt_opts*mrks + wrg_opts*wmrks
+    return result,[crt_opts,not_attempted,wrg_opts]
+
+def generate_concise(mrks,wmrks):
+    concise_marksheet = response
+    crt_opts_list = get_answer()
+    if crt_opts_list == []:
         return "Error!!!Answer is not exist in responses"
-    lst,score_after_neg,= [0,0,0],[]
-    
+    last_list,score_af_neg= [],[]
+    for index,row in response.iterrows():
+        curr_opts = [key for key in row][7:]
+        result,lst = calculate(mrks,wmrks,crt_opts_list,curr_opts)
+        last_list.append(lst)
+        score_af_neg.append(str(result)+"/"+str(mrks*len(crt_opts_list)))
+    concise_marksheet.insert(loc =6,column ="Score_After_Negative",value =score_af_neg)
+    concise_marksheet["Options"] = last_list
+    os.makedirs("sample_output",exist_ok = True)
+    os.makedirs(sample_output_path,exist_ok = True)
+    concise_marksheet.to_csv(sample_output_path+"/concise_marksheet.csv", index=False)
     return  
    
 def generateMarksheet(mrks,wmrks):
-    crt = get_answer(response)
+    crt = get_answer()
     if crt == []:
         return "Error!!!Answer is not exist in responses"
+    os.makedirs("sample_output",exist_ok = True)
     os.makedirs(sample_output_path,exist_ok = True)
     for i in range(len(response)):       
         wb =  openpyxl.Workbook() #creation and initialising a workbook
@@ -81,7 +99,7 @@ def generateMarksheet(mrks,wmrks):
         sheet.cell(row=11,column=4).value = 0
         sheet.cell(row=10,column=5).value = rgt+wrg+na
         sheet.cell(row=12,column=5).value = str(rgt*mrks+wrg*wmrks)+'/'+str(140)
-        wb.save("./sample_output/"+sheet.title+'.xlsx')
+        wb.save("./sample_output/marksheet/"+sheet.title+'.xlsx')
     return
 # generateMarksheet(5,-1)
-generate_concise()
+generate_concise(5,-1)
