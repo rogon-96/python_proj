@@ -23,24 +23,29 @@ crt_marks,wrg_marks = 0,0
 
 def handle_cases(request):
     if not os.path.exists(os.path.join(sample_input_path,"master_roll.csv")):
-        bool_dict["rollno_response"] = "You have not Uploaded master_roll.csv"
+        bool_dict["master_response"] = "You have not Uploaded master_roll.csv"
         return False
     if not os.path.exists(os.path.join(sample_input_path,"responses.csv")):
-        bool_dict["rollno_response"] = "You have not Uploaded responses.csv"
+        bool_dict["responses_response"] = "You have not Uploaded responses.csv"
         return False
     if request.form.get('positive')=='':
         bool_dict["positive_response"] = "This field is required"
         return False
+    else :
+        bool_dict["positive_response"] = ""
+        bool_dict['positive'] = request.form.get('positive')
     if request.form.get('negative')=='':
         bool_dict["negative_response"] = "This field is required"
         return False
-
+    else:
+        bool_dict["negative_response"] = ""
+        bool_dict['negative'] = request.form.get('negative')
     return True
     
 def handle_file_save(FileObject,req_file_name,req_resp_name):
     if not FileObject.filename:
         bool_dict[f"{req_resp_name}"] = "Didn't upload any file."
-        return   
+        return
     file_name = FileObject.filename
     if file_name!=req_file_name:
         bool_dict[f"{req_resp_name}"] = "Uploaded a wrong file..plz Upload {}".format(req_file_name)
@@ -53,7 +58,6 @@ def handle_file_save(FileObject,req_file_name,req_resp_name):
     FileObject.save(os.path.join(sample_input_path,filename))  
     bool_dict[f"{req_resp_name}"] = "Uploaded Successfully"
     return 
-
 
 @app.route('/',methods=['GET'])
 def index():
@@ -75,12 +79,12 @@ def response():
 
 @app.route('/RollNo',methods=['GET','POST'])
 def rollno():
+    global crt_marks,wrg_marks
     if not handle_cases(request):
         return redirect(url_for('index')) 
-    if request.form.get('positive')!='':
-        crt_marks = float(request.form.get('positive'))  
-    if request.form.get('negative')!='':
-        wrg_marks = float(request.form.get('negative'))
+    crt_marks = float(request.form.get('positive'))  
+    wrg_marks = float(request.form.get('negative'))
+    
     proj1.generateMarksheet(crt_marks,wrg_marks)
     bool_dict["rollno_response"] = "Generated Successfully"  
     return redirect(url_for('index'))
@@ -88,7 +92,15 @@ def rollno():
 
 @app.route('/concise',methods=['GET','POST'])
 def concise():
-    if not handle_cases(request):
+    global crt_marks,wrg_marks
+    if not os.path.exists(os.path.join(sample_input_path,"master_roll.csv")):
+        bool_dict["master_response"] = "You have not Uploaded master_roll.csv"
+        return redirect(url_for('index'))
+    if not os.path.exists(os.path.join(sample_input_path,"responses.csv")):
+        bool_dict["responses_response"] = "You have not Uploaded responses.csv"
+        return redirect(url_for('index'))
+    if crt_marks==0 and wrg_marks==0:
+        bool_dict["concise_response"] = "Plz fill the crt and wrng options"  
         return redirect(url_for('index'))
     proj1.generate_concise(crt_marks,wrg_marks)
     bool_dict["concise_response"] = "Generated Successfully"
@@ -97,6 +109,8 @@ def concise():
 
 @app.route('/sendemail',methods=['GET','POST'])
 def send_email():
+    if not handle_cases(request):
+        return redirect(url_for('index'))    
     files = os.listdir('sample_output\marksheet')
     roll_email_lst = proj1.get_roll_email()
     for roll,email1,email2 in roll_email_lst:

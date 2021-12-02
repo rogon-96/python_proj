@@ -31,16 +31,16 @@
         </form>
         <form action="RollNo" method="post">
             {%if data['positive_response'] and data['positive_response']=="This field is required" %}
-                <input style="border-color:red;" type="text" placeholder = "Correct option marks" id="positive" name='positive' ><br>
+                <input style="border-color:red;" type="text" placeholder = "Correct option marks" id="positive" name='positive'><br>
                 <p style="color: red;font-size: x-small;">{{data['positive_response']}}</p><br>
             {%else%}
-                <input type="text" placeholder = "Correct option marks" id="positive" name='positive'><br>
+                <input type="text" placeholder = "Correct option marks" id="positive" name='positive' value="{{data['positive']}}"><br>
             {%endif%}
             {%if data['negative_response'] and data['negative_response']=="This field is required" %}
                 <input style="border-color:red;"type="text" placeholder = "Wrong option marks"id="negative" name="negative"><br>
                 <p style="color: red;font-size: x-small;">{{data['negative_response']}}</p><br>
             {%else%}
-                <input type="text" placeholder = "Wrong option marks"id="negative" name="negative"><br>
+                <input type="text" placeholder = "Wrong option marks"id="negative" name="negative" value="{{data['negative']}}"><br>
             {%endif%}<br>
             <button type="submit" class="generate">Generate RollNo Wise Marksheet</button><br>
             {%if data['rollno_response']=='Generated Successfully' %}
@@ -51,7 +51,7 @@
         </form>
         <form action="concise" method="post">
             <button type="submit" class="generate">Generate Concise Marksheet</button><br>
-            {%if data['rollno_response']=='Generated Successfully' %}
+            {%if data['concise_response']=='Generated Successfully' %}
             <p style="color:green;font-size: x-small;">{{data['concise_response']}}</p>
             {%else %}
             <p style="color: red;font-size: x-small;">{{data['concise_response']}}</p>
