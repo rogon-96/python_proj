@@ -6,8 +6,8 @@ import proj1
 app = Flask(__name__)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = ''
-app.config['MAIL_PASSWORD'] = ''
+app.config['MAIL_USERNAME'] = 'motukurumidhun@gmail.com'
+app.config['MAIL_PASSWORD'] = 'Midhunreddy134@'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
@@ -15,7 +15,9 @@ bool_dict = {
     'master_response': '',
     'responses_response': '',
     'positive_response':'',
-    'negative_response': ''
+    'negative_response': '',
+    'positive':'',
+    'negative': ''
 }
 sample_input_path = "./sample_input"
 sample_output_path = "./sample_output"
@@ -119,7 +121,7 @@ def send_email():
         with app.open_resource("sample_output\marksheet\{}.xlsx".format(roll)) as fp:  
             msg.attach(f"{roll}", "application/xlsx", fp.read()) 
             mail.send(msg)
-            print(f"Success mail sent{roll}")
+            print(f"Success mail sent {roll}")
     bool_dict["email_response"] = "Email Sent Successfully"
     return redirect(url_for('index')) 
 

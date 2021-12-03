@@ -3,11 +3,18 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    width:500px;
+    margin-left: 35%;
     border-radius: 1rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     justify-content: space-between;
+    border: 2px solid black;
+}
+body {
+    background-color: hsla(89, 43%, 51%, 0.3);
 }
 .Upload{
+
     background: none;
     border: none;
     color:white;
@@ -22,6 +29,7 @@
     margin-left: 18%;
 } */
 .generate{
+    width: 100%;
     background: none;
     border: none;
     color:white;
