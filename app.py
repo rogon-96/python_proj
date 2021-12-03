@@ -6,8 +6,8 @@ import proj1
 app = Flask(__name__)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'motukurumidhun@gmail.com'
-app.config['MAIL_PASSWORD'] = 'Midhunreddy134@'
+app.config['MAIL_USERNAME'] = '************@gmail.com'
+app.config['MAIL_PASSWORD'] = '***************'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
@@ -132,7 +132,7 @@ def send_email():
     files = os.listdir('sample_output\marksheet')
     roll_email_lst = proj1.get_roll_email()
     for roll,email1,email2 in roll_email_lst:
-        msg = Message('Your marks',sender ='motukurumidhun@gmail.com',recipients = [email1,email2])
+        msg = Message('Your marks',sender ='************@gmail.com',recipients = [email1,email2])
         msg.body = 'Your Quiz Marks'
         with app.open_resource("sample_output\marksheet\{}.xlsx".format(roll)) as fp:  
             msg.attach(f"{roll}", "application/xlsx", fp.read()) 
