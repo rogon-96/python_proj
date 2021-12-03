@@ -87,7 +87,10 @@ def rollno():
     crt_marks = float(request.form.get('positive'))  
     wrg_marks = float(request.form.get('negative'))
     
-    proj1.generateMarksheet(crt_marks,wrg_marks)
+    exists = proj1.generateMarksheet(crt_marks,wrg_marks)
+    if exists!=None:
+        bool_dict["rollno_response"] = exists
+        return redirect(url_for('index'))
     bool_dict["rollno_response"] = "Generated Successfully"  
     return redirect(url_for('index'))
 
@@ -104,15 +107,28 @@ def concise():
     if crt_marks==0 and wrg_marks==0:
         bool_dict["concise_response"] = "Plz fill the crt and wrng options"  
         return redirect(url_for('index'))
-    proj1.generate_concise(crt_marks,wrg_marks)
+    exists = proj1.generate_concise(crt_marks,wrg_marks)
+    if exists!=None:
+        bool_dict["concise_response"] = exists
+        return redirect(url_for('index'))
     bool_dict["concise_response"] = "Generated Successfully"
     return redirect(url_for('index'))
 
 
 @app.route('/sendemail',methods=['GET','POST'])
 def send_email():
-    if not handle_cases(request):
-        return redirect(url_for('index'))    
+    if not os.path.exists(os.path.join(sample_input_path,"master_roll.csv")):
+        bool_dict["master_response"] = "You have not Uploaded master_roll.csv"
+        return redirect(url_for('index'))
+    if not os.path.exists(os.path.join(sample_input_path,"responses.csv")):
+        bool_dict["responses_response"] = "You have not Uploaded responses.csv"
+        return redirect(url_for('index'))
+    if crt_marks==0 and wrg_marks==0:
+        bool_dict["concise_response"] = "Plz fill the crt and wrng options"  
+        return redirect(url_for('index'))   
+    if not os.path.exists('sample_output\marksheet'):
+        bool_dict['email_response'] = "Plz generate marksheets"  
+        return redirect(url_for('index'))        
     files = os.listdir('sample_output\marksheet')
     roll_email_lst = proj1.get_roll_email()
     for roll,email1,email2 in roll_email_lst:

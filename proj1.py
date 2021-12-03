@@ -1,4 +1,5 @@
 import os,math,csv,openpyxl,pandas as pd
+from numpy import NaN
 from openpyxl.styles.colors import BLUE
 from openpyxl.styles import Alignment
 from openpyxl.styles import Font,Color
@@ -33,22 +34,43 @@ def calculate(mrks,wmrks,crt_opts_list,curr_opts):
     not_attempted = pd.Series(lt).isna().sum()
     wrg_opts-=not_attempted
     result = crt_opts*mrks + wrg_opts*wmrks
-    return result,[crt_opts,wrg_opts,not_attempted]
+    return result,[crt_opts,wrg_opts,not_attempted],crt_opts*mrks
 
 def generate_concise(mrks,wmrks):
     slist = pd.read_csv('./sample_input/master_roll.csv')
     response = pd.read_csv('./sample_input/responses.csv')
+    roll_dict = {}
+    for i in range(len(response)):
+        roll_dict[response.at[i,"Roll Number"].upper()] = 1
+    for i in range(len(slist)):
+        if slist.at[i,"roll"] in roll_dict: continue
+        else: 
+            length = len(response)
+            cols = response.columns
+            lst = []
+            for item in cols:
+                print(item)
+                if item == "Roll Number":
+                    lst.append(slist.at[i,"roll"])
+                elif item == "Name":
+                    lst.append(slist.at[i,"name"])
+                else :
+                    lst.append(NaN)
+            response.loc[length] = lst 
     concise_marksheet = response
     crt_opts_list = get_answer()
     if crt_opts_list == []:
         return "Error!!!Answer is not exist in responses"
-    last_list,score_af_neg= [],[]
+    
+    last_list,score_af_neg,score_bf_neg= [],[],[]
     for index,row in response.iterrows():
         curr_opts = [key for key in row][7:]
-        result,lst = calculate(mrks,wmrks,crt_opts_list,curr_opts)
+        result,lst,oc = calculate(mrks,wmrks,crt_opts_list,curr_opts)
         last_list.append(lst)
         score_af_neg.append(str(round(result,2))+"/"+str(mrks*len(crt_opts_list)))
+        score_bf_neg.append(str(round(oc,2))+"/"+str(mrks*len(crt_opts_list)))
     concise_marksheet.insert(loc =6,column ="Score_After_Negative",value =score_af_neg)
+    concise_marksheet.insert(loc=6,column ="Score_before_Negative",value =score_bf_neg)
     concise_marksheet["Options"] = last_list
     os.makedirs("sample_output",exist_ok = True)
     os.makedirs(sample_output_path,exist_ok = True)
@@ -63,24 +85,32 @@ def generate_concise(mrks,wmrks):
 def generateMarksheet(mrks,wmrks):
     slist = pd.read_csv('./sample_input/master_roll.csv')   
     response = pd.read_csv('./sample_input/responses.csv')
-    
-    #edge case or absentees
-    roll_dict = {}
-    for i in range(len(response)):
-        roll_dict[response.at[i,"Roll Number"]] = 1
-    
-    length = len(response)
-    n = 1
-    for i in range(len(slist)):
-        if slist.at[i,"roll"] in roll_dict: continue
-        else: 
-            response.at[length+n,"Roll Number"] = slist[i,"roll"]
-            response.at[length+n,"Name"] = slist[i,"name"]
-            n+=1
-        
     crt = get_answer()
     if crt == []:
         return "Error!!!Answer sheet does not exist in the responses"
+    #edge case or absentees
+    roll_dict = {}
+    for i in range(len(response)):
+        roll_dict[response.at[i,"Roll Number"].upper()] = 1
+    
+    # n = 1
+    for i in range(len(slist)):
+        if slist.at[i,"roll"] in roll_dict: continue
+        else: 
+            length = len(response)
+            cols = response.columns
+            lst = []
+            for item in cols:
+                print(item)
+                if item == "Roll Number":
+                    lst.append(slist.at[i,"roll"])
+                elif item == "Name":
+                    lst.append(slist.at[i,"name"])
+                else :
+                    lst.append(NaN)
+            response.loc[length] = lst
+            # n+=1
+        
     os.makedirs("sample_output",exist_ok = True)
     os.makedirs(sample_output_path,exist_ok = True)
     for i in range(len(response)):       
@@ -98,7 +128,7 @@ def generateMarksheet(mrks,wmrks):
         #alignment to centre
         alignment = Alignment(horizontal='center',vertical='bottom',text_rotation=0,wrap_text=False,shrink_to_fit=True,indent=0)
         
-        sheet.title = response.at[i,'Roll Number']
+        sheet.title = response.at[i,'Roll Number'].upper()
         sheet.merge_cells('A1:E4')
         # add image here
         img = Image('./static/iitp_logo.png')
@@ -120,7 +150,7 @@ def generateMarksheet(mrks,wmrks):
             cn+=1 
 
         sheet.merge_cells('B6:C6')
-        flist = [[6,1,"Name:"],[6,2,slist.at[i,'name']],[6,4,"Exam:"],[6,5,"quiz"],[7,1,"Roll Number:"],[7,2,response.at[i,'Roll Number']],[9,2,"Right"],[9,3,"Wrong"],[9,4,"Not Attempt"],[9,5,"Max"],[10,1,"No."],[11,1,"Marking"],[12,1,"Total"]]
+        flist = [[6,1,"Name:"],[6,2,slist.at[i,'name']],[6,4,"Exam:"],[6,5,"quiz"],[7,1,"Roll Number:"],[7,2,response.at[i,'Roll Number'].upper()],[9,2,"Right"],[9,3,"Wrong"],[9,4,"Not Attempt"],[9,5,"Max"],[10,1,"No."],[11,1,"Marking"],[12,1,"Total"]]
         for s in flist:
             sheet.cell(row=s[0],column=s[1]).value = s[2]
             sheet.cell(row=s[0],column=s[1]).alignment = alignment
@@ -182,3 +212,5 @@ def generateMarksheet(mrks,wmrks):
         
         wb.save("./sample_output/marksheet/"+sheet.title+'.xlsx')
     return
+
+# generateMarksheet(5,-1)
